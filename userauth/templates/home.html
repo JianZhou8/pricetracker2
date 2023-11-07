@@ -4,11 +4,10 @@
     <title>Home</title>
 </head>
 <body>
-    <h1>Welcome to PriceTracker</h1>
+    <h1>Welcome to PriceTracker  {% if user.is_authenticated %} , {{ username }}!    {% endif %} </h1>
     {% if user.is_authenticated %}
-        <p>Welcome, {{ username }}!</p>
-        <p>Username: {{ username }}</p>
-        <p>Password: {{ password }}</p>
+
+        <p>If price meeting your target, an email will be sent to: {{ email }}</p>
         <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
             <input type="submit" value="Logout">
@@ -17,5 +16,44 @@
         <p>You are not logged in.</p>
         <a href="{% url 'login' %}">Login</a>
     {% endif %}
+
+    {% if user.is_authenticated %}
+    <h2>Monitoring List</h2>
+    <form method="post" action="{% url 'save_tracklist' %}">
+        {% csrf_token %}
+        <table>
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>URL</th>
+                    <th>Current Price</th>
+                    <th>Target Price</th>
+                    <th>Check Frequency (minute)</th>
+                    <th>Last Check Time</th>
+                    <th>Enable Auto Monitoring</th>
+                    <th>Check Now</th>
+                    <th>Save</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in tracklist %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><input type="text" name="url_{{ forloop.counter }}" value="{{ item.url }}"></td>
+                        <td>{{ item.current_price }}</td>
+                        <td><input type="text" name="target_price_{{ forloop.counter }}" value="{{ item.target_price }}"></td>
+                        <td><input type="text" name="check_frequency_{{ forloop.counter }}" value="{{ item.check_frequency }}"></td>
+                        <td>{{ item.last_check_time }}</td>
+                        <td><input type="checkbox" name="enable_auto_{{ forloop.counter }}" {% if item.enable_auto_monitoring %}checked{% endif %}></td>
+                        <td><button>Check Now</button></td>
+                        <td><button type="submit">Save</button></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </form>
+    {% endif %}
+
+
 </body>
 </html>
