@@ -102,6 +102,8 @@ from django.http import HttpResponse
 from userauth.utils import get_price
 def checknow(request):
     if request.method == 'POST':
+
+
         # 获取提交的 URL
         url_to_check = request.POST.get('checknow_url', None)
 
@@ -112,13 +114,16 @@ def checknow(request):
         # 更新数据库中的相关信息，例如更新 TrackList 表中的 current_price 和 last_check_time
         # 这里需要根据你的数据模型进行具体的实现
         # 以下仅作为示例，假设 TrackList 模型中有名为 current_price 和 last_check_time 的字段
-        tracklist_item = TrackList.objects.get(url=url_to_check)
-        tracklist_item.current_price = current_price
-        tracklist_item.last_check_time = timezone.now()
-        tracklist_item.save()
+        if current_price is not None:
+            tracklist_item = TrackList.objects.get(url=url_to_check)
+            tracklist_item.current_price = current_price
+            tracklist_item.last_check_time = timezone.now()
+            tracklist_item.save()
 
-        # 返回一个简单的响应，也可以根据需要返回 JSON 数据等
-        return HttpResponse(f"Checked {url_to_check}. Current Price: {current_price}")
-
+            # 返回一个简单的响应，也可以根据需要返回 JSON 数据等
+            return HttpResponse(f"Checked {url_to_check}. Current Price: {current_price}")
+        else:
+            # 获取价格失败，你可以根据需要进行处理，这里简单返回 pricetracker_home 页面
+            return redirect('pricetracker_home')
     # 如果不是 POST 请求，可以根据需要返回一个空的页面或其他响应
     return HttpResponse("Invalid request")
