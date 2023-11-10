@@ -99,6 +99,7 @@ def save_tracklist(request):
         return redirect('pricetracker_home')
 
 from django.http import HttpResponse
+from userauth.utils import get_price
 def checknow(request):
     if request.method == 'POST':
         # 获取提交的 URL
@@ -106,7 +107,7 @@ def checknow(request):
 
         # 在这里执行检查的逻辑，可以使用相应的库或方法来获取 URL 的当前价格等信息
         # 这里仅作为演示，假设获取到的价格为 99.99
-        current_price = 99.99
+        current_price = get_price(url_to_check)
 
         # 更新数据库中的相关信息，例如更新 TrackList 表中的 current_price 和 last_check_time
         # 这里需要根据你的数据模型进行具体的实现
