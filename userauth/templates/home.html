@@ -19,7 +19,7 @@
 
     {% if user.is_authenticated %}
     <h2>Monitoring List</h2>
-    <form method="post" action="{% url 'save_tracklist' %}">
+    <form method="post" id="tracklistForm">
         {% csrf_token %}
         <table>
             <thead>
@@ -45,15 +45,50 @@
                         <td><input type="text" name="check_frequency_{{ forloop.counter }}" value="{{ item.check_frequency }}"></td>
                         <td>{{ item.last_check_time }}</td>
                         <td><input type="checkbox" name="enable_auto_{{ forloop.counter }}" {% if item.enable_auto_monitoring %}checked{% endif %}></td>
-                        <td><button>Check Now</button></td>
-                        <td><button type="submit">Save</button></td>
+                        <td><button type="button" class="checkNowBtn" data-url="{{ item.url }}">Check Now</button></td>
+                        <td><button type="submit" class="saveBtn">Save</button></td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </form>
     {% endif %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // 获取表单和按钮
+    var form = document.getElementById('tracklistForm');
+    var checkNowBtns = document.querySelectorAll('.checkNowBtn');
+    var saveBtns = document.querySelectorAll('.saveBtn');
 
+    // 给 "Check Now" 按钮添加点击事件
+    checkNowBtns.forEach(function (btn, index) {
+        btn.addEventListener('click', function () {
+            // 获取 data-url 属性的值
+            var url = btn.getAttribute('data-url');
+
+            // 创建一个隐藏的输入框，将 URL 的值设置为输入框的值
+            var hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'checknow_url';
+            hiddenInput.value = url;
+            form.appendChild(hiddenInput);
+
+            // 设置表单 action 为 checknow
+            form.action = "{% url 'checknow' %}";
+            // 提交表单
+            form.submit();
+        });
+    });
+
+    // 给 "Save" 按钮添加点击事件
+    saveBtns.forEach(function (btn, index) {
+        btn.addEventListener('click', function () {
+            // 设置表单 action 为 save_tracklist
+            form.action = "{% url 'save_tracklist' %}";
+        });
+    });
+});
+</script>
 
 </body>
 </html>

@@ -7,4 +7,5 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),
     path('', views.home, name='pricetracker_home'),  # 这是首页的URL配置
     path('save_tracklist/', views.save_tracklist, name='save_tracklist'),
+    path('checknow/', views.checknow, name='checknow'),
 ]

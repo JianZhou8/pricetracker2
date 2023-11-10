@@ -1,3 +1,6 @@
+from django.utils import timezone
+
+
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
@@ -94,3 +97,27 @@ def save_tracklist(request):
     else:
         # 处理非 POST 请求
         return redirect('pricetracker_home')
+
+from django.http import HttpResponse
+def checknow(request):
+    if request.method == 'POST':
+        # 获取提交的 URL
+        url_to_check = request.POST.get('checknow_url', None)
+
+        # 在这里执行检查的逻辑，可以使用相应的库或方法来获取 URL 的当前价格等信息
+        # 这里仅作为演示，假设获取到的价格为 99.99
+        current_price = 99.99
+
+        # 更新数据库中的相关信息，例如更新 TrackList 表中的 current_price 和 last_check_time
+        # 这里需要根据你的数据模型进行具体的实现
+        # 以下仅作为示例，假设 TrackList 模型中有名为 current_price 和 last_check_time 的字段
+        tracklist_item = TrackList.objects.get(url=url_to_check)
+        tracklist_item.current_price = current_price
+        tracklist_item.last_check_time = timezone.now()
+        tracklist_item.save()
+
+        # 返回一个简单的响应，也可以根据需要返回 JSON 数据等
+        return HttpResponse(f"Checked {url_to_check}. Current Price: {current_price}")
+
+    # 如果不是 POST 请求，可以根据需要返回一个空的页面或其他响应
+    return HttpResponse("Invalid request")
