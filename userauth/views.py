@@ -11,6 +11,8 @@ def register(request):
         username = request.POST['username']
         password = request.POST['password']
         user = User.objects.create_user(username=username, password=password)
+        user.email = request.POST['email']
+        user.save()
         login(request, user)
         return redirect('pricetracker_home')  # 重定向到网站的首页
 
