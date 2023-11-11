@@ -81,19 +81,39 @@ def home(request):
             if item.enable_auto_monitoring:
 
                 # 检查是否已有定时器，避免重复启动
-                if item.id not in timers:
+                if item.number not in timers:
 
-                    timers[item.id] = create_timer(url, frequency, stop_flag)
-                    print(f"Starting timer for {url}", timers[item.id])
+                    timers[item.number] = create_timer(url, frequency, stop_flag)
+                    print(f"Starting timer for {url}", timers[item.number])
             else:
                 # 如果 enable_auto_monitoring 取消，停止定时器
 
-                if item.id in timers:
-                    print(f"Stopping timer for {url}", timers[item.id])
+                if item.number in timers:
+                    print(f"Stopping timer for {url}", timers[item.number])
                     stop_flag = True
-                    timers[item.id].cancel()
-                    del timers[item.id]
-                    # print(f"end Stopping timer for {url}" ,timers[item.id])
+                    timers[item.number].cancel()
+                    del timers[item.number]
+                    # print(f"end Stopping timer for {url}" ,timers[item.number])
+
+        # Check if the form is submitted with new items
+        if request.method == 'POST' and 'new_url' in request.POST:
+            # Extract the values for the new item from the form
+
+            new_url = request.POST['new_url']
+            new_target_price = request.POST['new_target_price']
+            new_check_frequency = request.POST['new_check_frequency']
+            new_enable_auto = 'new_enable_auto' in request.POST
+
+            # Create a new TrackList object and save it to the database
+            new_item = TrackList(
+                user=user,
+                # number=new_number,
+                url=new_url,
+                target_price=new_target_price,
+                check_frequency=new_check_frequency,
+                enable_auto_monitoring=new_enable_auto
+            )
+            new_item.save()
 
 
 
@@ -124,7 +144,7 @@ def save_tracklist(request):
 
                 # 在数据库中更新或创建 TrackList 条目
                 try:
-                    tracklist_item = TrackList.objects.get(id=item_id)
+                    tracklist_item = TrackList.objects.get(number=item_id)
                     tracklist_item.url = url
                     tracklist_item.target_price = target_price
                     tracklist_item.check_frequency = check_frequency
@@ -134,7 +154,7 @@ def save_tracklist(request):
                     # 如果没有找到该条目，可能是新创建的
                     # 创建新的 TrackList 条目
                     tracklist_item = TrackList(
-                        id=item_id,
+                        number=item_id,
                         url=url,
                         target_price=target_price,
                         check_frequency=check_frequency,

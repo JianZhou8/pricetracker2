@@ -21,10 +21,11 @@
     <h2>Monitoring List</h2>
     <form method="post" id="tracklistForm">
         {% csrf_token %}
-        <table>
+        <button type="button" id="addRowBtn">Add a new row</button>
+        <table id="trackingTable">
             <thead>
                 <tr>
-                    <th>No.</th>
+                    <th>Item ID</th>
                     <th>URL</th>
                     <th>Current Price</th>
                     <th>Target Price</th>
@@ -38,7 +39,7 @@
             <tbody>
                 {% for item in tracklist %}
                     <tr>
-                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.number }}</td>
                         <td><input type="text" name="url_{{ forloop.counter }}" value="{{ item.url }}"></td>
                         <td>{{ item.current_price }}</td>
                         <td><input type="text" name="target_price_{{ forloop.counter }}" value="{{ item.target_price }}"></td>
@@ -88,6 +89,40 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+</script>
+
+<script>
+    // JavaScript code to handle adding a new row
+document.getElementById('addRowBtn').addEventListener('click', function() {
+    // Get the table body
+    var tbody = document.querySelector('#trackingTable tbody');
+
+    // Create a new row
+    var newRow = tbody.insertRow();
+
+    // Add cells to the new row
+    var numberCell = newRow.insertCell();
+    var urlCell = newRow.insertCell();
+    var currentPriceCell = newRow.insertCell();
+    var targetPriceCell = newRow.insertCell();
+    var checkFrequencyCell = newRow.insertCell();
+    var lastCheckTimeCell = newRow.insertCell();
+    var enableAutoMonitoringCell = newRow.insertCell();
+    var checkNowCell = newRow.insertCell();
+    var saveCell = newRow.insertCell();
+
+    // Add input elements to the cells
+    numberCell.innerHTML = '';
+    urlCell.innerHTML = '<input type="text" name="new_url" value="">';
+    currentPriceCell.innerHTML = '';
+    targetPriceCell.innerHTML = '<input type="text" name="new_target_price" value="">';
+    checkFrequencyCell.innerHTML = '<input type="text" name="new_check_frequency" value="">';
+    lastCheckTimeCell.innerHTML = '<input type="text" name="new_last_check_time" value="" disabled>';
+    enableAutoMonitoringCell.innerHTML = '<input type="checkbox" name="new_enable_auto">';
+    checkNowCell.innerHTML = '<button type="button">Check Now</button>';
+    saveCell.innerHTML = '<button type="submit">Save</button>';
+});
+
 </script>
 
 </body>

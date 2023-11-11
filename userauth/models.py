@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 class TrackList(models.Model):
     user = models.ForeignKey(User, default=1,  on_delete=models.CASCADE)  # 添加用户外键
-    number = models.IntegerField()
+    number = models.AutoField(primary_key=True)
     url = models.URLField()
     current_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     target_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
