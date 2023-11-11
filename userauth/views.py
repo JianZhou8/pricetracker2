@@ -40,7 +40,14 @@ def user_logout(request):
 
 
 from userauth.models import TrackList
-from .utils import set_timer, get_price
+from threading import Timer
+
+
+# 存储定时器的字典
+timers = {}
+
+
+
 def home(request):
     if request.user.is_authenticated:
         # 用户已登录
@@ -49,29 +56,44 @@ def home(request):
         user = request.user
         tracklist = TrackList.objects.filter(user=user)  # 获取当前用户的 tracklist 数据
 
+        def callback(url, frequency, stop_flag):
+            # 这里可以执行你的操作，比如获取价格、保存到数据库等
+            print(f"Checking price for {url}", stop_flag)
+
+            if not stop_flag:
+                create_timer(url, frequency, stop_flag)
+
+        def create_timer(url, frequency, stop_flag):
+            # 创建 Timer 对象并启动
+            timer = Timer(frequency * 10, callback, args=[url, frequency, stop_flag])
+            timer.start()
+            return timer
+
+        stop_flag = False
         for item in tracklist:
             # 获取用户设定的 URL、频率等信息
             url = item.url
             frequency = item.check_frequency
-
-            # 定义回调函数
-            def callback(url):
-                # price = get_price(url)
-                # 在这里处理获取到的价格，例如保存到数据库等操作
-                # print(f"Price for {url}: {price}")
-                print(f"Price for {url}", timezone.now())
-
+            # stop_flag = False
             # 如果 enable_auto_monitoring 启用，则启动定时器
             if item.enable_auto_monitoring:
+
                 # 检查是否已有定时器，避免重复启动
-                if not hasattr(item, 'timer'):
-                    item.timer = set_timer(url, frequency, callback)
+                if item.id not in timers:
+
+                    timers[item.id] = create_timer(url, frequency, stop_flag)
+                    print(f"Starting timer for {url}", timers[item.id])
             else:
                 # 如果 enable_auto_monitoring 取消，停止定时器
-                if hasattr(item, 'timer'):
-                    print(f"Stopping timer for {url}")
-                    item.timer.set()  # 设置 stop_event，通知线程退出
-                    item.timer.join()  # 等待线程退出
+
+                if item.id in timers:
+                    print(f"Stopping timer for {url}", timers[item.id])
+                    stop_flag = True
+                    timers[item.id].cancel()
+                    del timers[item.id]
+                    # print(f"end Stopping timer for {url}" ,timers[item.id])
+
+
 
         # 然后将 tracklist 数据传递给模板
         return render(request, 'home.html', {'username': username,  'email': email,  'tracklist': tracklist})

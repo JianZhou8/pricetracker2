@@ -57,3 +57,43 @@ def set_timer(url, frequency, callback):
     timer_thread.start()
 
     return stop_event
+
+# utils.py
+import threading
+
+# def create_timer(url, frequency, callback):
+#     def run_timer():
+#         while True:
+#             callback(url)
+#             # 间隔 frequency 秒执行一次
+#             threading.Event().wait(frequency * 10)
+#
+#     # 创建线程并启动
+#     timer_thread = threading.Thread(target=run_timer)
+#     timer_thread.start()
+#
+#     # 返回定时器的标识符
+#     return str(id(timer_thread))
+
+from threading import Timer
+
+# def create_timer(url, frequency, callback):
+#     def timer_function():
+#         # 执行定时操作
+#         callback(url)
+#
+#     # 创建 Timer 对象并启动
+#     timer = Timer(frequency * 10, timer_function)
+#     timer.start()
+#
+#     return timer
+
+
+def stop_timer(timer_id):
+    # 根据定时器标识符停止对应的线程
+    print("stop_timer begin", timer_id)
+    for thread in threading.enumerate():
+        if str(id(thread)) == timer_id:
+            print(f"Before join - Thread {timer_id} is alive: {thread.is_alive()}")
+            thread.join()
+            print(f"After join - Thread {timer_id} is alive: {thread.is_alive()}")

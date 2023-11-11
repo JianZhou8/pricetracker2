@@ -10,7 +10,7 @@ class TrackList(models.Model):
     check_frequency = models.IntegerField(default=10)
     last_check_time = models.DateTimeField(auto_now_add=True)
     enable_auto_monitoring = models.BooleanField(default=False)
-
+    timer_id = models.CharField(max_length=255, blank=True, null=True)
     def __str__(self):
         return f"TrackList {self.number}"
 
