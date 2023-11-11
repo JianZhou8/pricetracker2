@@ -41,3 +41,19 @@ def get_price(url):
         # 处理异常，可以根据实际情况返回默认值或者抛出详细的异常信息
         print(f"Error while getting price for {url}: {e}")
         return None
+
+
+import threading
+import time
+
+def set_timer(url, frequency, callback):
+    def run():
+        while not stop_event.is_set():
+            callback(url)
+            stop_event.wait(frequency * 10)  # 等待指定的频率，单位是秒
+
+    stop_event = threading.Event()
+    timer_thread = threading.Thread(target=run)
+    timer_thread.start()
+
+    return stop_event
