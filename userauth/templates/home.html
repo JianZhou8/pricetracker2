@@ -8,6 +8,7 @@
     {% if user.is_authenticated %}
 
         <p>If price meeting your target, an email will be sent to: {{ email }}</p>
+        <button type="button" id="sendMailBtn">Send Test Email</button>
         <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
             <input type="submit" value="Logout">
@@ -40,12 +41,12 @@
                 {% for item in tracklist %}
                     <tr>
                         <td>{{ item.number }}</td>
-                        <td><input type="text" name="url_{{ forloop.counter }}" value="{{ item.url }}"></td>
+                        <td><input type="text" name="url_{{ item.number }}" value="{{ item.url }}"></td>
                         <td>{{ item.current_price }}</td>
-                        <td><input type="text" name="target_price_{{ forloop.counter }}" value="{{ item.target_price }}"></td>
-                        <td><input type="text" name="check_frequency_{{ forloop.counter }}" value="{{ item.check_frequency }}"></td>
+                        <td><input type="text" name="target_price_{{ item.number }}" value="{{ item.target_price }}"></td>
+                        <td><input type="text" name="check_frequency_{{ item.number }}" value="{{ item.check_frequency }}"></td>
                         <td>{{ item.last_check_time }}</td>
-                        <td><input type="checkbox" name="enable_auto_{{ forloop.counter }}" {% if item.enable_auto_monitoring %}checked{% endif %}></td>
+                        <td><input type="checkbox" name="enable_auto_{{ item.number }}" {% if item.enable_auto_monitoring %}checked{% endif %}></td>
                         <td><button type="button" class="checkNowBtn" data-url="{{ item.url }}">Check Now</button></td>
                         <td><button type="submit" class="saveBtn">Save</button></td>
                     </tr>
@@ -123,6 +124,18 @@ document.getElementById('addRowBtn').addEventListener('click', function() {
     saveCell.innerHTML = '<button type="submit">Save</button>';
 });
 
+{#send test email#}
+document.getElementById('sendMailBtn').addEventListener('click', function() {
+    // 使用 Ajax 请求发送测试邮件
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '{% url "send_test_email" %}', true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            alert('Test email sent successfully.');
+        }
+    };
+    xhr.send();
+});
 </script>
 
 </body>

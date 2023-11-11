@@ -97,3 +97,4 @@ def stop_timer(timer_id):
             print(f"Before join - Thread {timer_id} is alive: {thread.is_alive()}")
             thread.join()
             print(f"After join - Thread {timer_id} is alive: {thread.is_alive()}")
+

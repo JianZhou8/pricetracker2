@@ -197,3 +197,20 @@ def checknow(request):
             return redirect('pricetracker_home')
     # 如果不是 POST 请求，可以根据需要返回一个空的页面或其他响应
     return HttpResponse("Invalid request")
+
+
+# send_test_email
+
+from django.core.mail import send_mail
+from django.http import HttpResponse
+
+def send_test_email(request):
+    # 发送测试邮件
+    subject = 'Price Tracker Notification - Price met your target'
+    message = 'This is a notification that the price of the item you watched have reduced to your target price.'
+    from_email = 'Zhou0214algonquin@gmail.com'
+    recipient_list = ['jet.ca@live.com']  # 替换为接收测试邮件的实际邮箱地址
+
+    send_mail(subject, message, from_email, recipient_list)
+
+    return HttpResponse('Test email sent successfully.')

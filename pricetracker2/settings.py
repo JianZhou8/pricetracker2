@@ -126,5 +126,10 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # 替换为您的 SMTP 服务器地址
+EMAIL_PORT = 587  # 替换为您的 SMTP 服务器的适当端口
+EMAIL_USE_TLS = True  # 如果您的 SMTP 服务器需要 TLS，请设置为 True
+EMAIL_HOST_USER = 'Zhou0214algonquin@gmail.com'  # 替换为您的电子邮件地址
+EMAIL_HOST_PASSWORD = 'dnwpxvlqufpdrnhx'  # 替换为您的电子邮件密码
 
