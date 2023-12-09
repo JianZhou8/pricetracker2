@@ -25,7 +25,7 @@ def get_price(url):
                     price_text = price_element.text.strip()
 
                     # Extract the numeric part, assuming the price format is like "$639.20 CAD"
-                    price = price_text.split(' ')[0].replace('$', '')
+                    price = price_text.split(' ')[0].replace('$', '').replace(',', '')
 
                     return price
                 else:

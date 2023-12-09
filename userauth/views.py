@@ -135,8 +135,12 @@ def save_tracklist(request):
                 item_id = int(item.split("_")[1])
                 url = request.POST[item]
                 target_price = request.POST[f"target_price_{item_id}"]
-                check_frequency = request.POST[f"check_frequency_{item_id}"]
+                check_frequency = float (request.POST[f"check_frequency_{item_id}"])
                 enable_auto_monitoring = request.POST.get(f"enable_auto_{item_id}")
+
+                # Validate check_frequency
+                if check_frequency < 10:
+                    return HttpResponse("Error: Check frequency must be at least 10 minutes.")
 
                 # convert web form data to bool data type
                 enable_auto_monitoring = enable_auto_monitoring == 'on'
