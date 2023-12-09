@@ -23,5 +23,5 @@ from userauth import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('userauth.urls')),
-    # 其他应用的URL配置
+
 ]

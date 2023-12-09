@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 
 
 def register(request):
+    # Handle user registration
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -14,7 +15,7 @@ def register(request):
         user.email = request.POST['email']
         user.save()
         login(request, user)
-        return redirect('pricetracker_home')  # 重定向到网站的首页
+        return redirect('pricetracker_home')   # Redirect to the website's home page
 
     return render(request, 'register.html')
 
@@ -25,7 +26,7 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('pricetracker_home')  # 重定向到网站的首页
+            return redirect('pricetracker_home')   # Redirect to the website's home page
 
     return render(request, 'login.html')
 
@@ -36,58 +37,57 @@ def user_logout(request):
     if request.method == 'POST':
         logout(request)
         print('logout')
-        return redirect('pricetracker_home')  # 重定向到网站的首页
+        return redirect('pricetracker_home')   # Redirect to the website's home page
 
-    return redirect('pricetracker_home')  # 处理 GET 请求，重定向到首页
+    return redirect('pricetracker_home')  # Handle GET request, redirect to the home page
 
 
 from userauth.models import TrackList
 from threading import Timer
 
 
-# 存储定时器的字典
+# Dictionary to store timers
 timers = {}
 
 
 
 def home(request):
     if request.user.is_authenticated:
-        # 用户已登录
+        # If the user is logged in
         username = request.user.username
         email = request.user.email
         user = request.user
-        tracklist = TrackList.objects.filter(user=user)  # 获取当前用户的 tracklist 数据
+        tracklist = TrackList.objects.filter(user=user)
 
         def callback(url, frequency, stop_flag):
-            # 这里可以执行你的操作，比如获取价格、保存到数据库等
-            print(f"Checking price for {url}", stop_flag)
+            # Perform fetching prices
+            # print(f"Checking price for {url}", stop_flag)
 
             if not stop_flag:
                 create_timer(url, frequency, stop_flag)
 
         def create_timer(url, frequency, stop_flag):
-            # 创建 Timer 对象并启动
-            timer = Timer(frequency * 10, callback, args=[url, frequency, stop_flag])
+            # Create and start a Timer object
+            timer = Timer(frequency * 60, callback, args=[url, frequency, stop_flag])
             timer.start()
             return timer
 
         stop_flag = False
         for item in tracklist:
-            # 获取用户设定的 URL、频率等信息
+            # Get URL and frequency information
             url = item.url
             frequency = item.check_frequency
             # stop_flag = False
-            # 如果 enable_auto_monitoring 启用，则启动定时器
+
             if item.enable_auto_monitoring:
 
-                # 检查是否已有定时器，避免重复启动
+                # Check if a timer already exists to avoid duplicate starts
                 if item.number not in timers:
 
                     timers[item.number] = create_timer(url, frequency, stop_flag)
                     print(f"Starting timer for {url}", timers[item.number])
             else:
-                # 如果 enable_auto_monitoring 取消，停止定时器
-
+                # If auto monitoring is disabled, stop the timer
                 if item.number in timers:
                     print(f"Stopping timer for {url}", timers[item.number])
                     stop_flag = True
@@ -117,32 +117,31 @@ def home(request):
 
 
 
-        # 然后将 tracklist 数据传递给模板
         return render(request, 'home.html', {'username': username,  'email': email,  'tracklist': tracklist})
     else:
-        # 用户未登录
+        # If the user is not logged in
         return render(request, 'home.html')
 
 
 from django.shortcuts import redirect
-from userauth.models import TrackList  # 导入 TrackList 模型
+from userauth.models import TrackList
 
 def save_tracklist(request):
     if request.method == 'POST':
-        # 获取表单数据
+        # Get form data
         for item in request.POST:
             if item.startswith("url_"):
-                # 解析 item 的编号
+                # Get the item ID from the form data
                 item_id = int(item.split("_")[1])
                 url = request.POST[item]
                 target_price = request.POST[f"target_price_{item_id}"]
                 check_frequency = request.POST[f"check_frequency_{item_id}"]
                 enable_auto_monitoring = request.POST.get(f"enable_auto_{item_id}")
 
-                # 将字符串转换为布尔值
-                enable_auto_monitoring = enable_auto_monitoring == 'on'  # 如果值为 'on'，则为 True，否则为 False
+                # convert web form data to bool data type
+                enable_auto_monitoring = enable_auto_monitoring == 'on'
 
-                # 在数据库中更新或创建 TrackList 条目
+                # Update or create a TrackList entry in the database
                 try:
                     tracklist_item = TrackList.objects.get(number=item_id)
                     tracklist_item.url = url
@@ -151,8 +150,7 @@ def save_tracklist(request):
                     tracklist_item.enable_auto_monitoring = enable_auto_monitoring
                     tracklist_item.save()
                 except TrackList.DoesNotExist:
-                    # 如果没有找到该条目，可能是新创建的
-                    # 创建新的 TrackList 条目
+                    # new tracklist item
                     tracklist_item = TrackList(
                         number=item_id,
                         url=url,
@@ -162,41 +160,45 @@ def save_tracklist(request):
                     )
                     tracklist_item.save()
 
-        # 可以添加成功消息或重定向到其他页面
         return redirect('pricetracker_home')
     else:
-        # 处理非 POST 请求
+        # Handle non-POST requests
         return redirect('pricetracker_home')
 
-from django.http import HttpResponse
-from userauth.utils import get_price
+from userauth.utils import get_price, get_user_email, send_email_notification
+
+
 def checknow(request):
     if request.method == 'POST':
-
-
-        # 获取提交的 URL
+        # Get URL
         url_to_check = request.POST.get('checknow_url', None)
 
-        # 在这里执行检查的逻辑，可以使用相应的库或方法来获取 URL 的当前价格等信息
-        # 这里仅作为演示，假设获取到的价格为 99.99
         current_price = get_price(url_to_check)
 
-        # 更新数据库中的相关信息，例如更新 TrackList 表中的 current_price 和 last_check_time
-        # 这里需要根据你的数据模型进行具体的实现
-        # 以下仅作为示例，假设 TrackList 模型中有名为 current_price 和 last_check_time 的字段
         if current_price is not None:
             tracklist_item = TrackList.objects.get(url=url_to_check)
             tracklist_item.current_price = current_price
             tracklist_item.last_check_time = timezone.now()
             tracklist_item.save()
+            print(tracklist_item.target_price)
 
-            # 返回一个简单的响应，也可以根据需要返回 JSON 数据等
-            return HttpResponse(f"Checked {url_to_check}. Current Price: {current_price}")
+            # Check if the current price is below the target price
+            if float(current_price) < tracklist_item.target_price:
+                # If yes, send an email notification
+                user_email = get_user_email(tracklist_item)
+                send_email_notification(user_email, tracklist_item.url, current_price)
+                return HttpResponse(f"Checked {url_to_check}. Current Price: {current_price} is lower than target price. Email sent.")
+
+            else:
+                return HttpResponse(f"Checked {url_to_check}. Current Price: {current_price}")
+
+
+
         else:
-            # 获取价格失败，你可以根据需要进行处理，这里简单返回 pricetracker_home 页面
+            # Handle price retrieval failure
             return redirect('pricetracker_home')
-    # 如果不是 POST 请求，可以根据需要返回一个空的页面或其他响应
-    return HttpResponse("Invalid request")
+    # If not a POST request, return an empty page
+    return HttpResponse("Invalid request.")
 
 
 # send_test_email
@@ -204,13 +206,14 @@ def checknow(request):
 from django.core.mail import send_mail
 from django.http import HttpResponse
 
-def send_test_email(request):
-    # 发送测试邮件
+def send_email(request):
+    # Send a test email
     subject = 'Price Tracker Notification - Price met your target'
     message = 'This is a notification that the price of the item you watched have reduced to your target price.'
     from_email = 'Zhou0214algonquin@gmail.com'
-    recipient_list = ['jet.ca@live.com']  # 替换为接收测试邮件的实际邮箱地址
+    recipient_list = ['jet.ca@live.com']
 
     send_mail(subject, message, from_email, recipient_list)
 
     return HttpResponse('Test email sent successfully.')
+

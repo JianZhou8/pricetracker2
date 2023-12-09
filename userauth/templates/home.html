@@ -8,7 +8,7 @@
     {% if user.is_authenticated %}
 
         <p>If price meeting your target, an email will be sent to: {{ email }}</p>
-        <button type="button" id="sendMailBtn">Send Test Email</button>
+
         <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
             <input type="submit" value="Logout">
